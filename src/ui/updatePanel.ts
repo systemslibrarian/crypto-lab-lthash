@@ -11,11 +11,8 @@ import {
   LtHash,
   type LtHashParams,
   type Mode,
-  addWords,
   digestOf,
   firstDifference,
-  hashItemWords,
-  subWords,
   toHex,
   utf8,
   wordsToBytes,
@@ -176,10 +173,21 @@ export function renderUpdatePanel(root: HTMLElement): void {
     const backwards = digestOf(params, [...items].reverse());
     const orderDiff = firstDifference(forwards, backwards);
 
+    // The round trip is run on a REAL incremental state, through the same add()
+    // and remove() the controls above drive, rather than by adding and
+    // subtracting vectors directly. Computing it with the pure algebra would
+    // make this card a demonstration of a different code path than the one the
+    // panel claims to be showing — and a removal that silently added would go on
+    // reporting that the digest came back.
     const probe = 'a-new-item';
-    const withProbe = addWords(params, forwards, hashItemWords(params, utf8(probe)));
-    const undone = subWords(params, withProbe, hashItemWords(params, utf8(probe)));
-    const undoneDiff = firstDifference(forwards, undone);
+    const trip = new LtHash(params, state.mode);
+    for (const name of names) trip.add(name);
+    const tripBase = trip.digest;
+    trip.add(probe);
+    const withProbe = trip.digest;
+    trip.remove(probe);
+    const undone = trip.digest;
+    const undoneDiff = firstDifference(tripBase, undone);
 
     output.append(
       h(
@@ -200,7 +208,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
           'div',
           { class: 'card' },
           h('h3', {}, 'Removing undoes adding'),
-          h('p', { class: 'help' }, `“${probe}” is added to the current digest and then removed again. Subtraction modulo 2^${params.d} is the exact inverse of addition, so the digest has to come back.`),
+          h('p', { class: 'help' }, `“${probe}” is added to a fresh state holding the same items and then removed again, through the same add and remove the controls above drive. Subtraction modulo 2^${params.d} is the exact inverse of addition, so the digest has to come back.`),
           field('after adding', toHex(wordsToBytes(withProbe))),
           field('after removing again', toHex(wordsToBytes(undone))),
           undoneDiff === -1

@@ -51,18 +51,15 @@
       "file": "src/lthash/lthash.ts",
       "find": "    this.running = subWords(this.params, this.running, h);",
       "replace": "    this.running = addWords(this.params, this.running, h); // mutated: remove adds",
-      "why": "Implements removal as another addition. The reference sequence removes \"b\", so the deployed digest must stop matching, and the round-trip verdict must stop reporting that the digest came back.",
+      "why": "Implements removal as another addition. The four-step reference sequence removes \"b\", so the deployed digest must stop matching the Folly checksum, and the round-trip card — which drives the same add and remove on a live state — must stop reporting that the digest came back. The sibling verdict folly-removal-undone is deliberately NOT named here: it hashes the two items that remain from scratch, with no removal in it at all, and a mutation to removal has no business changing it.",
       "kills": {
         "remove-undoes-add": {
           "test": "remove-undoes-add compares the digest before and after a round trip",
           "claim": { "contains": "BACK TO THE START", "absent": "STILL DIFFERENT", "result": "pass" }
         },
-        "folly-removal-undone": {
-          "test": "folly-removal-undone reports the digest of the two items that remain",
-          "claim": {
-            "contains": "IDENTICAL — adding and then removing \"b\" left no trace in any of the 1,024 words",
-            "result": "pass"
-          }
+        "folly-vector": {
+          "test": "folly-vector reports the comparison against the reference checksum",
+          "claim": { "contains": "MATCHES THE REFERENCE", "absent": "DIFFERS", "result": "pass" }
         }
       },
       "unitKills": ["add then remove returns to the original digest"]
