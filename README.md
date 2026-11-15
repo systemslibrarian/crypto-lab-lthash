@@ -105,7 +105,7 @@ npm run mutate list   # what those mutations are and what each one must kill
 
 ## Performance
 
-Everything runs in the browser with no network I/O after the static load. One item of the deployed instance costs two BLAKE2b compressions plus 31 more for the remaining output blocks, measured at about 93 µs; a reduced instance needs only the first output block, about 5.7 µs. The default attack size (N = 4, d = 4) hashes its 625 items in about 5 ms; the largest offered, (8, 6), hashes 531,441 items in about 3.7 s and is chunked so the page stays responsive. Instances whose (N + 1)^d exceeds 600,000 are refused with the count and the cap named, which is why the deployed instance cannot be attacked here: it would need 1025^16 ≈ 2^160 hash queries.
+Everything runs in the browser with no network I/O after the static load. One item of the deployed instance costs one BLAKE2b compression for the root hash plus one for each of the 32 output blocks, measured at about 93 µs; a reduced instance reads only the first output block and so costs two compressions, about 5.7 µs. The default attack size (N = 4, d = 4) hashes its 625 items in about 5 ms; the largest offered, (8, 6), hashes 531,441 items in about 3.7 s and is chunked so the page stays responsive. Instances whose (N + 1)^d exceeds 600,000 are refused with the count and the cap named, which is why the deployed instance cannot be attacked here: it would need 1025^16 ≈ 2^160 hash queries.
 
 ---
 
