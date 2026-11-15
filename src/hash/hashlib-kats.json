@@ -1,0 +1,68 @@
+[
+  {
+    "label": "abc, 20-byte digest",
+    "data": "616263",
+    "params": {
+      "digest_size": 20
+    },
+    "digest": "384264f676f39536840523f284921cdc68b6846b"
+  },
+  {
+    "label": "abc, 32-byte digest",
+    "data": "616263",
+    "params": {
+      "digest_size": 32
+    },
+    "digest": "bddd813c634239723171ef3fee98579b94964e3bb1cb3e427262c8c068d52319"
+  },
+  {
+    "label": "empty, 64-byte digest",
+    "data": "",
+    "params": {
+      "digest_size": 64
+    },
+    "digest": "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce"
+  },
+  {
+    "label": "128-byte message (exactly one block)",
+    "data": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f",
+    "params": {
+      "digest_size": 64
+    },
+    "digest": "2319e3789c47e2daa5fe807f61bec2a1a6537fa03f19ff32e87eecbfd64b7e0e8ccff439ac333b040f19b0c4ddd11a61e24ac1fe0f10a039806c5dcc0da3d115"
+  },
+  {
+    "label": "129-byte message (one byte into a second block)",
+    "data": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f80",
+    "params": {
+      "digest_size": 64
+    },
+    "digest": "f59711d44a031d5f97a9413c065d1e614c417ede998590325f49bad2fd444d3e4418be19aec4e11449ac1a57207898bc57d76a1bcf3566292c20c683a5c4648f"
+  },
+  {
+    "label": "500 bytes, tree params: fanout 2 depth 3 leaf 64 offset 7 ndepth 1 inner 32",
+    "data": "9a0cf352b45ae76230177a5f4c28fd51acae46baecbb5916d904b899a6b4c2a62c6b3111d030e3e5b13f7839399e81b3000b86449f944d4fa14e54a8be3eebbd9538c53c1cd3e35e4a6d6085d30ed93c8f63cb0b35276e7f098046dfe3b9df3050cefa0bab793c0e3dfdb973b2ff0078d08004fcaa32e585631a797b8b2d8eb598525e29b2549521fc6ff51de8d5f64f52afe3af1a1da8704ebfed9c9d33177dec20e1ac20907d562acdb0142e7f54b7167069a31840684ae7ec346c966f353289c6cd4dbfb7fc67a535417ae4d54fd538962d9d3be4fff5bd7f69b00b5e0434d8ef1ab153beb24c4bb515f3802510402dfa197f51d65138d1479a53e0390d9c5fff2e5e8ce6bcacd8f5d06242083bfce03374cf774e6b82e04131eeb0950872277b5f30f451141286a329e8aa17d78be342f613cafa73fe10517196ba7aae17fb134588048fb239b6c21aef15e00b6b1851ceb4b62bea6c514770e5e1c1ec83f91a145d59e248df996cf542b202dcbd9dce593b263fc4fdc62426bfe16147543e700616f5284e9d5aed932c4cf550ff4cf0539e1da8d44d1e6bf0b9382938a72540473a35ad5e58e6775eb2a05f1b9e99d1fce5ba05048e6a7eeca80af7b036e465e9561b4e1f9da4fcaf423e64c5ea382352c9c9976458e0bbce9b1b253c20138dae2af2613bd2a5b66ba32a3a75f22332f67d",
+    "params": {
+      "digest_size": 48,
+      "fanout": 2,
+      "depth": 3,
+      "leaf_size": 64,
+      "node_offset": 7,
+      "node_depth": 1,
+      "inner_size": 32
+    },
+    "digest": "d206f42b4ebbe0c22be5bf425f3212d03ffcab4ec49e03cab6e748d79ebac2e8365644f6857b30513ea33c543862a0cc"
+  },
+  {
+    "label": "abc, fanout 0 depth 1 offset 3 inner 64, 64-byte digest",
+    "data": "616263",
+    "params": {
+      "digest_size": 64,
+      "fanout": 0,
+      "depth": 1,
+      "node_offset": 3,
+      "inner_size": 64
+    },
+    "digest": "38f0a6b21c5f84ed495470898059677c62e2ed0d838a2e3c7bdbc455a678ec6cc318ad1e23aa3676f84d59921509a054016e8ce3ee593414f627db07badb05a3"
+  }
+]
