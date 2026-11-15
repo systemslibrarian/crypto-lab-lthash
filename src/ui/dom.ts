@@ -118,7 +118,16 @@ export function evidenceRetired(text: string): HTMLElement {
   return h('p', { class: 'callout evidence-retired', role: 'status', 'aria-live': 'polite' }, text);
 }
 
-/** A select with a visible label and a custom chevron (appearance: none). */
+/**
+ * A select with a visible label and a custom chevron (appearance: none).
+ *
+ * A selection that does not CHANGE the value does not call back. Without that
+ * guard, re-selecting the option already chosen retires whatever evidence is on
+ * screen and recomputes it — which is indistinguishable, to a reader, from the
+ * page having decided the result was stale. A browser only fires `change` when
+ * the value really moved, but automation dispatches it unconditionally, and the
+ * page should not behave differently for the two.
+ */
 export function select(
   id: string,
   label: string,
@@ -126,9 +135,18 @@ export function select(
   value: string,
   onchange: (value: string) => void,
 ): HTMLElement {
+  let current = value;
   const el = h(
     'select',
-    { id, onchange: (e: Event) => onchange((e.target as HTMLSelectElement).value) },
+    {
+      id,
+      onchange: (e: Event) => {
+        const next = (e.target as HTMLSelectElement).value;
+        if (next === current) return;
+        current = next;
+        onchange(next);
+      },
+    },
     ...options.map((o) => h('option', { value: o.value, selected: o.value === value }, o.text)),
   );
   return h('div', { class: 'control' }, h('label', { for: id }, label), h('div', { class: 'select-wrap' }, el));

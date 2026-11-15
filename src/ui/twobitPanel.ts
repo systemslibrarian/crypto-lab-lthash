@@ -65,7 +65,9 @@ export function renderTwoBitPanel(root: HTMLElement): void {
     result = runTwoBit(params, oracle);
     checked = result.ok ? verifyCollision(params, result.plusItems, result.minusItems) : null;
     running = false;
-    draw();
+    // Output only: the controls above it have not changed, and rebuilding them
+    // would move focus off the button that started the run.
+    drawOutput();
   };
 
   function drawOutput(): void {
@@ -129,7 +131,7 @@ export function renderTwoBitPanel(root: HTMLElement): void {
         'Per-layer statistics',
         h(
           'table',
-          { class: 'grid-table' },
+          { class: 'grid-table', id: 'twobit-layers' },
           h('caption', {}, 'What each layer consumed. A rejection is a trial batch whose sign system was inconsistent: the basis is kept and a new batch is drawn.'),
           h(
             'thead',
@@ -211,10 +213,10 @@ export function renderTwoBitPanel(root: HTMLElement): void {
           'These are the paper’s own formulas, evaluated here rather than quoted: the one-attempt success probability of equation 8, the affine per-output cost of equation 13, and the eight-layer composition of equation 16 at the batch size the paper minimises to.',
         ),
         statList(
-          stat('deployed-p', 'ONE-ATTEMPT SUCCESS PROBABILITY p(1024, 550)', deployedCost.cost.p.toFixed(5), deployedCost.cost.p.toFixed(5)),
+          stat('deployed-p', 'ONE-ATTEMPT ACCEPTANCE PROBABILITY p(1024, 550)', deployedCost.cost.p.toFixed(5), deployedCost.cost.p.toFixed(5)),
           stat('deployed-mu', 'EXPECTED INPUTS PER OUTPUT', deployedCost.cost.mu.toFixed(2), deployedCost.cost.mu.toFixed(2)),
           stat('deployed-expected-log2', 'EXPECTED QUERIES, COMPUTED HERE', `2^${deployedCost.log2Expected.toFixed(2)}`, deployedCost.log2Expected.toFixed(2), true),
-          stat('deployed-budget-log2', 'CAPPED BUDGET AT SUCCESS ≥ 1/2', `2^${deployedCost.log2Budget.toFixed(2)}`, deployedCost.log2Budget.toFixed(2)),
+          stat('deployed-budget-log2', 'CAPPED BUDGET AT PROBABILITY ≥ 1/2', `2^${deployedCost.log2Budget.toFixed(2)}`, deployedCost.log2Budget.toFixed(2)),
           stat('deployed-onebit-log2', 'ONE-BIT RECURSION, FOR COMPARISON', `2^${log2Big(deployedOneBit).toFixed(2)}`, log2Big(deployedOneBit).toFixed(2)),
         ),
         h(

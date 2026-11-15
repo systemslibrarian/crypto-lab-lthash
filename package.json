@@ -12,7 +12,8 @@
     "test:a11y": "playwright test",
     "test:claims": "playwright test e2e/claims.spec.ts",
     "test:mutation": "node scripts/mutate.mjs run",
-    "mutate": "node scripts/mutate.mjs"
+    "mutate": "node scripts/mutate.mjs",
+    "test:verdicts": "playwright test e2e/verdicts.spec.ts e2e/verdict-coverage.spec.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

@@ -173,7 +173,7 @@ export function renderLimitPanel(root: HTMLElement): void {
           stat('limit-size-s', 'ITEMS IN SET S', String(sides[0].names.length), sides[0].names.length),
           stat('limit-size-t', 'ITEMS IN SET T', String(sides[1].names.length), sides[1].names.length),
           stat('limit-shared', 'ITEMS IN BOTH SETS', '0', 0),
-          stat('limit-words-equal', 'WORDS EQUAL OUT OF N', `${params.N} of ${params.N}`, params.N),
+          stat('limit-words-equal', 'WORDS THAT AGREE, OUT OF N', `${params.N} of ${params.N}`, params.N),
           stat('limit-queries', 'HASH QUERIES TO BUILD THE FIXTURE', result.queries.toLocaleString('en-US'), result.queries),
         ),
         h('div', { class: 'input-row' }, button('Build it again with fresh items', () => {

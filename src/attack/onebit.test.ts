@@ -33,7 +33,12 @@ describe('Check C — the one-bit recursion on reduced-size instances', () => {
       expect(verdict.ok, verdict.reason).toBe(true);
       expect(wordsEqual(verdict.digestA, zeroDigest(p))).toBe(true);
       expect(verdict.wordsCompared).toBe(N);
-    }, 30_000);
+      // The budget carries the measurement rather than shrinking what the test
+      // does. (8, 6) hashes 531,441 items: 4.6s on an idle machine, 22.7s
+      // measured while a browser suite was running on the same box. Vitest 4
+      // enforces ELAPSED time, so a budget sized for the idle case fails under
+      // load and reads as a performance regression it is not.
+    }, 120_000);
   }
 
   it('the query count is computed, not stored: (N + 1)^d for the three sizes', () => {

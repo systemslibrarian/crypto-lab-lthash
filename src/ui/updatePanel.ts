@@ -75,7 +75,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
     if (trimmed === '') {
       state.error = 'Type an item first: an empty string is not an item this panel will hash.';
       state.last = null;
-      draw();
+      drawOutput();
       return;
     }
     const before = state.hash.digest;
@@ -87,7 +87,11 @@ export function renderUpdatePanel(root: HTMLElement): void {
       state.error = err instanceof DuplicateItemError ? err.message : String(err);
       state.last = null;
     }
-    draw();
+    // Only the output is redrawn. Rebuilding the controls here would reset the
+    // item box to its default — so typing an item, adding it and then pressing
+    // Remove would remove something else — and it would drop focus after every
+    // press, which is worse for a keyboard reader than for a mouse one.
+    drawOutput();
   };
 
   function drawOutput(): void {

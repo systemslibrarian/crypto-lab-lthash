@@ -1,4 +1,134 @@
 {
-  "comment": ["placeholder — filled in with the eight recorded mutations below"],
-  "mutations": {}
+  "comment": [
+    "The eight mutations the brief requires, each recorded as a CONCRETE PATCH — a file, an",
+    "anchor that must occur exactly once, and its replacement — never as a sentence describing",
+    "an edit. scripts/mutate.mjs applies and judges them.",
+    "",
+    "A kill counts only when all four rules hold, and the script enforces all four: the owning",
+    "test PASSED unmutated in the same run; the patch actually CHANGED the file; the run served",
+    "the MUTATED code (the built bundle's hash must move, and the failure must not match a shape",
+    "that means the code never ran); and the failure is the owning assertion rather than the",
+    "suite going red. A patch that does not compile is DOES NOT BUILD and is never a kill.",
+    "",
+    "Three kinds of owner, because this lab's evidence lives in three places:",
+    "  kills      a rendered marker, naming the browser TEST and the exact CLAIM that kills it.",
+    "             e2e/global-teardown.ts requires each of these to have been OBSERVED executing:",
+    "             expectVerdict/expectClaim record every (test, marker, claim) they run, and the",
+    "             rule is checked against that record rather than against the spec's source text,",
+    "             because a mention is not an assertion.",
+    "  specKills  a browser test that asserts something other than a marker (an arithmetic",
+    "             re-derivation, for instance).",
+    "  unitKills  a Vitest test, matched on its title.",
+    "",
+    "The results of the last run are NOT written back here. e2e/global-teardown.ts already fails",
+    "the suite when a recorded kill never executed, so an archived 'observed' string would be a",
+    "second copy of an answer the suite already enforces. What the run produces is a ledger on",
+    "stdout; what guards the claim is the enforcement."
+  ],
+  "mutations": {
+    "words-read-big-endian": {
+      "file": "src/lthash/lthash.ts",
+      "find": "    words[i] = reduceWord(bytes[2 * i] | (bytes[2 * i + 1] << 8), p.d);",
+      "replace": "    words[i] = reduceWord(bytes[2 * i + 1] | (bytes[2 * i] << 8), p.d);",
+      "why": "Reads each 16-bit word big-endian. Folly reads little-endian, so the deployed digest must stop matching the reference checksum and the browser's SHA-256 must stop agreeing about the bytes.",
+      "kills": {
+        "folly-vector": {
+          "test": "folly-vector reports the comparison against the reference checksum",
+          "claim": { "contains": "MATCHES THE REFERENCE", "absent": "DIFFERS", "result": "pass" }
+        }
+      },
+      "unitKills": ["the words are little-endian"]
+    },
+    "addition-drops-the-modulus-mask": {
+      "file": "src/lthash/lthash.ts",
+      "find": "  for (let i = 0; i < p.N; i++) out[i] = reduceWord(a[i] + b[i], p.d);",
+      "replace": "  for (let i = 0; i < p.N; i++) out[i] = a[i] + b[i];",
+      "why": "Adds without reducing modulo 2^d. The digest is then not an element of the group the hash is defined over, and words grow past the modulus the page says it is working in.",
+      "specKills": ["the headline claim: the digest after an add is the digest before plus the item vector, recomputed here"],
+      "unitKills": ["every word stays below 2^d after addition and subtraction"]
+    },
+    "remove-adds-instead-of-subtracting": {
+      "file": "src/lthash/lthash.ts",
+      "find": "    this.running = subWords(this.params, this.running, h);",
+      "replace": "    this.running = addWords(this.params, this.running, h); // mutated: remove adds",
+      "why": "Implements removal as another addition. The reference sequence removes \"b\", so the deployed digest must stop matching, and the round-trip verdict must stop reporting that the digest came back.",
+      "kills": {
+        "remove-undoes-add": {
+          "test": "remove-undoes-add compares the digest before and after a round trip",
+          "claim": { "contains": "BACK TO THE START", "absent": "STILL DIFFERENT", "result": "pass" }
+        },
+        "folly-removal-undone": {
+          "test": "folly-removal-undone reports the digest of the two items that remain",
+          "claim": {
+            "contains": "IDENTICAL — adding and then removing \"b\" left no trace in any of the 1,024 words",
+            "result": "pass"
+          }
+        }
+      },
+      "unitKills": ["add then remove returns to the original digest"]
+    },
+    "blake2xb-node-offset-fixed-at-zero": {
+      "file": "src/hash/blake2xb.ts",
+      "find": "    nodeOffset: index,",
+      "replace": "    nodeOffset: 0,",
+      "why": "Fixes the BLAKE2Xb node offset at 0, so every one of the 32 output blocks is a copy of the first. The expansion stops being an extendable-output function and the reference vector, which exercises all 32 blocks, must stop matching.",
+      "kills": {
+        "folly-sha256": {
+          "test": "folly-sha256 reports what the browser SHA-256 said about those bytes",
+          "claim": { "contains": "SAME 32 BYTES", "absent": "DIFFERENT", "result": "pass" }
+        }
+      },
+      "unitKills": ["every output block differs from every other"]
+    },
+    "recursion-stops-one-level-early": {
+      "file": "src/attack/onebit.ts",
+      "find": "    return this.ready && this.level === this.params.d;",
+      "replace": "    return this.ready && this.level === this.params.d - 1;",
+      "why": "Calls the recursion finished with one modulus bit still uncancelled. The surviving vector is then only even, not zero, so the independent checker must refuse to call the result a collision.",
+      "kills": {
+        "collision-zero": {
+          "test": "collision-zero is the independent checker, not the recursion, reporting the zero",
+          "claim": {
+            "contains": ["ALL 4 WORDS ZERO", "same digest as the empty set"],
+            "absent": "NOT A COLLISION",
+            "result": "alarm"
+          }
+        }
+      },
+      "unitKills": ["exactly 625 queries"]
+    },
+    "elimination-skips-the-row-swap": {
+      "file": "src/attack/gf2.ts",
+      "find": "    if (p !== r) {",
+      "replace": "    if (false) {",
+      "why": "Never swaps the pivot row into place, so the elimination proceeds with a zero in the pivot position and the vector it reads out is not in the kernel. The checked read-out refuses it rather than handing the recursion a vector it would then halve.",
+      "unitKills": ["the kernel vector is in the kernel even when the pivot is not in the first row"]
+    },
+    "verifier-compares-only-the-first-word": {
+      "file": "src/check/verify.ts",
+      "find": "  for (let i = 0; i < p.N; i++) {",
+      "replace": "  for (let i = 0; i < 1; i++) {",
+      "why": "Stops the independent comparison after one word, so two digests that happen to agree in word 0 are reported as a collision. The page states how many words it compared, and that number must move.",
+      "kills": {
+        "verify-words-compared": {
+          "test": "the colliding set sizes sum to the number of items the checker re-hashed",
+          "claim": { "text": "4", "value": "4" }
+        }
+      },
+      "unitKills": ["rejects digests that agree in the first word but differ later"]
+    },
+    "query-counter-ignores-a-repeated-item": {
+      "file": "src/lthash/lthash.ts",
+      "find": "    this.queries += 1;\n    this.distinct.add(key);",
+      "replace": "    if (!this.distinct.has(key)) this.queries += 1;\n    this.distinct.add(key);",
+      "why": "Counts only the first query for each item, hiding repeats behind a cache. The counter answers 'how many times did this page call the hash', and an item asked about twice is two calls.",
+      "kills": {
+        "update-queries": {
+          "test": "the query count claimed counts every call, including a repeat",
+          "claim": { "text": "6", "value": "6" }
+        }
+      },
+      "unitKills": ["two queries of the same item are two queries and one distinct item"]
+    }
+  }
 }

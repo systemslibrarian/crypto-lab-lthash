@@ -111,7 +111,9 @@ export function renderRecursionPanel(root: HTMLElement): void {
       groups: trace.groups,
       survivorItems: run.survivorItems().length,
     });
-    draw();
+    // Output only: rebuilding the panel would move focus off the button the
+    // reader just pressed, once per cancelled bit.
+    drawOutput();
   };
 
   const cancelAll = (): void => {
@@ -124,7 +126,7 @@ export function renderRecursionPanel(root: HTMLElement): void {
     checked = verifyCollision(params, result.items, []);
     const T = ['side-0', 'side-1', 'side-2'].map(utf8);
     unionChecked = verifyCollision(params, [...result.items, ...T], T);
-    draw();
+    drawOutput();
   };
 
   function drawOutput(): void {

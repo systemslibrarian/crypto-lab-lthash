@@ -6,3 +6,10 @@ playwright-report
 test-results
 public/deployment.json
 chat.md
+
+# Working inputs, kept on disk and out of the repo for the same reason chat.md is:
+# a committed snapshot of a spec or a brief ages silently into a second, wrong
+# account of what the lab does. The README cites the sources by link instead.
+_MASTER-TEMPLATE.md
+*-brief.md
+brief.md
