@@ -1,0 +1,361 @@
+/* LtHash — theme + component styles.
+   Dark is the only theme; the palette lives on :root. The always-dark shared top
+   bar owns its own styles, so base element rules here are scoped to #app and
+   never fight it. */
+
+:root {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #1b2230;
+  --border: #2b3440;
+  --control-border: #626d7a;
+  --text: #e6edf3;
+  --text-dim: #b3bdc8; /* muted via lower lightness, never opacity */
+  --accent: #b5c24a; /* brand accent — also read by the shared header */
+  --accent-ink: #141605; /* text on an accent fill: 9.8:1 on --accent */
+  --accent-text: #b5c24a; /* accent as text/border on the page bg: 9.8:1 */
+  --ok: #4ac26b;
+  --ok-text: #7ee29a;
+  --bad: #f85149;
+  --bad-text: #ff8b84;
+  --alarm: #e8a13c;
+  --alarm-text: #f4bd6a;
+  --radius: 10px;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  background-color: var(--bg); /* longhand — axe/WebKit miss the shorthand */
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.55;
+}
+
+#app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 clamp(0.9rem, 3vw, 2rem) 3rem;
+}
+
+#app a {
+  color: var(--accent-text);
+  text-decoration: underline; /* persistent underline, not colour alone */
+  text-underline-offset: 2px;
+}
+#app code,
+#app kbd {
+  font-family: var(--mono);
+}
+#app :is(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+/* ---------- hero ---------- */
+.cl-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:clamp(1rem,4vw,3rem);flex-wrap:wrap;margin:clamp(1rem,3vw,2rem) 0 1.5rem;}
+.cl-hero-main{flex:1 1 22rem;min-width:min(100%,20rem);}
+.cl-hero-title{margin:0;font-size:clamp(1.6rem,3.8vw,2.7rem);font-weight:700;line-height:1.1;letter-spacing:.01em;}
+.cl-hero-sub{margin:.4rem 0 0;font-size:clamp(.9rem,1.6vw,1.05rem);letter-spacing:.01em;color:var(--accent-text);}
+.cl-hero-desc{margin:.55rem 0 0;font-size:1rem;line-height:1.5;color:var(--text-dim);max-width:60ch;}
+.cl-hero-why{flex:0 1 min(40%,26rem);min-width:min(100%,15rem);box-sizing:border-box;border:1px solid var(--border);border-radius:10px;padding:.85rem 1.05rem;background:color-mix(in oklab,var(--accent) 6%,transparent);}
+.cl-hero-why-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.14em;color:var(--accent-text);}
+.cl-hero-why-text{margin:.35rem 0 0;font-size:.95rem;line-height:1.5;}
+/* The mobile query resets .cl-hero-main as well as .cl-hero-why: `flex: 1 1 22rem`
+   is a ROW basis, and once the direction is column that 22rem is read as a
+   height, reserving dead space under the title at every width below 640px. */
+@media (max-width:640px){.cl-hero{flex-direction:column;}.cl-hero-main{flex-basis:auto;min-width:0;}.cl-hero-why{flex-basis:auto;width:100%;}}
+
+/* ---------- tabs ---------- */
+.tabs { margin: 0.5rem 0 1.25rem; }
+.tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+.tab-btn {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+}
+/* The hover fill needs an edge of its own: hover persists after a click, and
+   --surface-2 alone is far under 3:1 against the page (SC 1.4.11). */
+.tab-btn:hover { color: var(--text); background: var(--surface-2); border-color: var(--control-border); }
+/* The ACTIVE tab's border must not be its own fill colour, or the control has no
+   boundary of its own. --accent-ink is already defined as readable ON this fill. */
+.tab-btn.active { color: var(--accent-ink); background: var(--accent); border-color: var(--accent-ink); }
+
+/* ---------- panels ---------- */
+.panel { animation: fade 0.2s ease; }
+.panel-intro h2 { font-size: 1.35rem; margin: 0 0 0.5rem; }
+.panel-intro p { color: var(--text-dim); margin: 0 0 0.6rem; max-width: 70ch; }
+.panel-intro .lede { color: var(--text); }
+
+.controls {
+  display: grid;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+  margin: 1rem 0;
+}
+.control { display: grid; gap: 0.4rem; }
+.control > label, .control-label { font-weight: 600; font-size: 0.9rem; }
+.control-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+.input-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.help { font-size: 0.82rem; color: var(--text-dim); margin: 0.15rem 0 0; }
+
+.mono-input, .text-input {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+}
+.text-input { font-family: var(--sans); }
+.mono-input[aria-invalid="true"], .text-input[aria-invalid="true"] { border-color: var(--bad); }
+textarea.mono-input { resize: vertical; min-height: 4.5rem; }
+
+/* Styled selects: appearance none plus a custom chevron (drawn with a border
+   triangle, so no background-image and nothing for the CSP to allow). */
+.select-wrap { position: relative; display: inline-block; }
+.select-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 0.45rem 2rem 0.45rem 0.6rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid var(--text);
+  border-bottom: 2px solid var(--text);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.radio-row { display: flex; flex-wrap: wrap; gap: 1rem; }
+.radio { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  /* --control-border, not --border: the surface-divider token is under 3:1
+     against this button's own fill, where SC 1.4.11 needs 3:1. */
+  border: 1px solid var(--control-border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Border --accent-ink, not --accent: a border painted the same colour as the
+   fill leaves the control no edge of its own. */
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-ink); }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.06); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--accent-text); }
+.btn-danger { border-color: var(--bad); color: var(--bad-text); }
+
+/* ---------- output / fields ---------- */
+.output { display: grid; gap: 1rem; margin-top: 0.5rem; }
+.field { display: grid; gap: 0.2rem; }
+.field-label { font-size: 0.8rem; font-weight: 600; color: var(--text-dim); }
+.field-sub { font-weight: 400; }
+.field-value {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  overflow-wrap: anywhere; /* wrap long hex instead of a scroll region */
+  color: var(--text);
+  display: block;
+}
+.field-value.plain { font-family: var(--sans); }
+
+.card {
+  display: grid;
+  gap: 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+.card h3 { margin: 0; font-size: 1rem; }
+.card-grid { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+
+/* ---------- digest word cells ---------- */
+.words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.word {
+  display: grid;
+  gap: 0.05rem;
+  justify-items: center;
+  min-width: 3.1rem;
+  padding: 0.25rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+.word-idx { color: var(--text-dim); font-size: 0.66rem; }
+.word-val { color: var(--text); font-variant-numeric: tabular-nums; }
+.word-zero .word-val { color: var(--ok-text); }
+.word-changed { border-color: var(--accent-text); animation: bump 0.45s ease; }
+.words-add .word-val::before { content: "+"; color: var(--text-dim); }
+.word-wide { min-width: 4.4rem; }
+
+/* ---------- tables (parity matrices, layer stats, comparisons) ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+.grid-table { border-collapse: collapse; width: 100%; font-size: 0.82rem; font-family: var(--mono); }
+.grid-table caption { text-align: left; padding: 0.5rem 0.6rem; color: var(--text-dim); font-family: var(--sans); font-size: 0.85rem; }
+.grid-table th, .grid-table td { text-align: right; padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.grid-table thead th { background: var(--surface-2); font-size: 0.76rem; position: sticky; top: 0; }
+.grid-table tbody tr:last-child td { border-bottom: none; }
+.grid-table th[scope="row"] { text-align: left; color: var(--text-dim); }
+.grid-table.text-table { font-family: var(--sans); }
+.grid-table.text-table th, .grid-table.text-table td { text-align: left; white-space: normal; }
+.cell-in { background: color-mix(in oklab, var(--accent) 22%, var(--surface)); color: var(--text); font-weight: 700; }
+.col-in { background: color-mix(in oklab, var(--accent) 12%, var(--surface)); }
+.quoted { color: var(--text-dim); }
+
+/* ---------- verdicts (icon + text + colour) ---------- */
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.verdict-icon { font-size: 1.05rem; line-height: 1; }
+.verdict-pass { background: color-mix(in oklab, var(--ok) 16%, var(--surface)); border-color: var(--ok); }
+.verdict-pass .verdict-icon { color: var(--ok-text); }
+.verdict-fail { background: color-mix(in oklab, var(--bad) 15%, var(--surface)); border-color: var(--bad); }
+.verdict-fail .verdict-icon { color: var(--bad-text); }
+.verdict-alarm { background: color-mix(in oklab, var(--alarm) 20%, var(--surface)); border-color: var(--alarm); }
+.verdict-alarm .verdict-icon { color: var(--alarm-text); }
+.verdict-pending { background: var(--surface-2); border-color: var(--control-border); color: var(--text-dim); }
+.verdict-pending .verdict-icon { color: var(--text-dim); }
+
+/* ---------- measurements ---------- */
+.stats { display: grid; gap: 0.5rem 1.2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); margin: 0; }
+.stat { display: grid; gap: 0.1rem; }
+.stat dt { font-size: 0.75rem; color: var(--text-dim); font-weight: 600; letter-spacing: 0.04em; }
+.stat dd { margin: 0; font-family: var(--mono); font-size: 0.95rem; overflow-wrap: anywhere; }
+.stat-big dd { font-size: 1.05rem; color: var(--accent-text); }
+
+/* ---------- callouts ---------- */
+.callout {
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.88rem;
+  border: 1px solid var(--border);
+  margin: 0.9rem 0;
+}
+.callout code { background: var(--surface-2); padding: 0.05em 0.3em; border-radius: 4px; }
+.callout-info { background: var(--surface); color: var(--text-dim); }
+.callout-scope { background: var(--surface); color: var(--text-dim); border-style: dashed; }
+.callout-danger { background: color-mix(in oklab, var(--bad) 12%, var(--surface)); border-color: var(--bad); color: var(--text); }
+.callout-caveat { background: color-mix(in oklab, var(--alarm) 12%, var(--surface)); border-color: var(--alarm); color: var(--text); }
+.evidence-retired { background: color-mix(in oklab, var(--alarm) 12%, var(--surface)); border-color: var(--alarm); color: var(--text); }
+
+/* ---------- progress ---------- */
+.progress { display: grid; gap: 0.3rem; margin: 0.6rem 0; }
+.progress-label { font-size: 0.82rem; color: var(--text-dim); font-family: var(--mono); }
+.progress-track { height: 0.5rem; border: 1px solid var(--control-border); border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); width: 0; }
+
+/* ---------- pills ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--border);
+}
+.pill-ok { background: color-mix(in oklab, var(--ok) 18%, var(--surface)); color: var(--text); border-color: var(--ok); }
+.pill-bad { background: color-mix(in oklab, var(--bad) 18%, var(--surface)); color: var(--text); border-color: var(--bad); }
+
+/* ---------- disclosures ---------- */
+#app summary { cursor: pointer; font-weight: 600; }
+#app summary:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.disclosure, .learner-check { border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.85rem; background: var(--surface); margin: 0.5rem 0; }
+.disclosure-body { display: grid; gap: 0.5rem; margin-top: 0.6rem; }
+.disclosure-body p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
+.learner-check { background: color-mix(in oklab, var(--accent) 5%, var(--surface)); }
+.check-body { margin-top: 0.6rem; display: grid; gap: 0.55rem; }
+.check-q { margin: 0; font-size: 0.92rem; }
+.check-opt { font-size: 0.85rem; }
+.check-feedback { display: grid; gap: 0.35rem; }
+.check-explain { margin: 0; font-size: 0.88rem; color: var(--text-dim); }
+
+/* ---------- footer ---------- */
+.scripture-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+.scripture-footer p { margin: 0.4rem 0; }
+.footer-links a { color: var(--accent-text); }
+
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bump { from { transform: translateY(-2px); } to { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Cancel the animations and leave the end state: both keyframes start from a
+     transform/opacity that must not be what a reduced-motion reader is left with. */
+  .panel, .word-changed { animation: none; }
+  * { transition: none !important; }
+}
+
+/* Touch targets: WCAG 2.5.5 on coarse pointers, where precise tapping is harder. */
+@media (pointer: coarse) {
+  #app .btn, #app .tab-btn, #app .check-opt, #app .select-wrap select { min-height: 44px; }
+}
