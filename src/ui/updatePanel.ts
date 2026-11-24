@@ -11,10 +11,8 @@ import {
   LtHash,
   type LtHashParams,
   type Mode,
-  digestOf,
   firstDifference,
   toHex,
-  utf8,
   wordsToBytes,
 } from '../lthash/lthash';
 import {
@@ -167,21 +165,24 @@ export function renderUpdatePanel(root: HTMLElement): void {
     );
 
     // ── The two algebraic facts, each computed on both sides ────────────
-    const names = members.filter((e) => e.count > 0).map((e) => e.name);
-    const items = names.map(utf8);
-    const forwards = digestOf(params, items);
-    const backwards = digestOf(params, [...items].reverse());
+    // Replay the signed counts so both examples start from the learner's actual state.
+    function replay(entries: typeof members): LtHash {
+      const copy = new LtHash(params, state.mode);
+      for (const { name, count } of entries) {
+        for (let i = 0; i < Math.abs(count); i++) {
+          if (count > 0) copy.add(name);
+          else copy.remove(name);
+        }
+      }
+      return copy;
+    }
+    const trip = replay(members);
+    const forwards = trip.digest;
+    const backwards = replay([...members].reverse()).digest;
     const orderDiff = firstDifference(forwards, backwards);
-
-    // The round trip is run on a REAL incremental state, through the same add()
-    // and remove() the controls above drive, rather than by adding and
-    // subtracting vectors directly. Computing it with the pure algebra would
-    // make this card a demonstration of a different code path than the one the
-    // panel claims to be showing — and a removal that silently added would go on
-    // reporting that the digest came back.
-    const probe = 'a-new-item';
-    const trip = new LtHash(params, state.mode);
-    for (const name of names) trip.add(name);
+    const occupied = new Set(members.map((entry) => entry.name));
+    let probe = 'a-new-item';
+    for (let suffix = 2; occupied.has(probe); suffix++) probe = `a-new-item-${suffix}`;
     const tripBase = trip.digest;
     trip.add(probe);
     const withProbe = trip.digest;
@@ -197,7 +198,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
           'div',
           { class: 'card' },
           h('h3', {}, 'Order does not matter'),
-          h('p', { class: 'help' }, `The ${names.length} item${names.length === 1 ? '' : 's'} currently in the set, hashed in this order and then in the reverse order. Addition is commutative, so a set has one digest however you reach it.`),
+          h('p', { class: 'help' }, `Replay the signed counts for the ${members.length} distinct tracked items in forward and reverse order. Each copy contributes to the digest, and removal subtracts a copy.`),
           field('in order', toHex(wordsToBytes(forwards))),
           field('reversed', toHex(wordsToBytes(backwards))),
           orderDiff === -1
@@ -221,7 +222,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
     // ── The measurements ────────────────────────────────────────────────
     output.append(
       statList(
-        stat('update-item-count', 'ITEMS IN THE SET', String(names.length), names.length),
+        stat('update-item-count', 'DISTINCT ITEMS WITH NONZERO COUNTS', String(members.length), members.length),
         stat('update-word-count', 'WORDS IN THE DIGEST', String(params.N), params.N),
         stat('update-modulus', 'ARITHMETIC MODULO', `2^${params.d} = ${2 ** params.d}`, 2 ** params.d),
         stat('update-queries', 'HASH QUERIES SO FAR', state.hash.queries.toLocaleString('en-US'), state.hash.queries),
@@ -233,7 +234,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
       output.append(
         note(
           'caveat',
-          `You removed ${negatives.map((e) => `“${e.name}”`).join(', ')} without ever adding it. The construction cannot refuse that: subtraction is defined for every vector, so the digest simply moved and no error is possible. The digest above is still exactly Σ H(x) over the signed counts, which is why the comparison still agrees.`,
+          `You removed ${negatives.map((e) => `“${e.name}”`).join(', ')} more times than you added them. The construction cannot refuse that: subtraction is defined for every vector, so the digest simply moved and no error is possible. The digest above is still exactly Σ H(x) over the signed counts, which is why the comparison still agrees.`,
         ),
       );
     }

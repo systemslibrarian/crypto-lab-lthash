@@ -44,6 +44,27 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('displayed claims', () => {
+  test('a user item can have the same name as the round-trip example', async ({ page }) => {
+    await page.fill('#update-item', 'a-new-item');
+    await page.click('#update-add');
+    await expect(page.locator('[data-verdict="remove-undoes-add"]')).toContainText('BACK TO THE START');
+    await expect(page.getByText('“a-new-item-2” is added', { exact: false })).toBeVisible();
+  });
+
+  test('order and round-trip panels use the same signed multiset as the maintained digest', async ({ page }) => {
+    await page.getByRole('radio', { name: /multiset/ }).check();
+    await page.fill('#update-item', 'duplicate');
+    await page.click('#update-add');
+    await page.click('#update-add');
+    await page.fill('#update-item', 'debt');
+    await page.click('#update-remove');
+    const field = (name: string) => page.locator('.field').filter({ has: page.getByText(name, { exact: true }) }).locator('.field-value');
+    const maintained = await field('maintained incrementally').innerText();
+    for (const label of ['in order', 'reversed', 'after removing again']) {
+      await expect(field(label)).toHaveText(maintained);
+    }
+  });
+
   test('the item box arrives holding this lab’s own example item', async ({ page }) => {
     await expect(page.locator('#update-item')).toHaveValue('dates');
   });
