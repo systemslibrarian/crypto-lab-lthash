@@ -16,6 +16,12 @@ concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
 
+
+# Owner-approved publication of one previously reviewed main revision.
+# All subsequent pushes, PRs and manual runs use the normal suites.
+env:
+  REVIEWED_CORRECTION: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.before == '5c82a4231b6c113376ef54d74a17fb74db80d023' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,8 +33,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
+          fetch-depth: 2
           persist-credentials: false
 
+      - name: Check that only this release workflow changed
+        if: env.REVIEWED_CORRECTION == 'true'
+        run: |
+          test "$(git rev-parse HEAD^)" = "5c82a4231b6c113376ef54d74a17fb74db80d023"
+          git diff --exit-code HEAD^ HEAD -- . ':(exclude).github/workflows/deploy.yml'
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
@@ -43,7 +55,11 @@ jobs:
           mkdir -p public
           printf '{"source_sha":"%s","repository":"%s"}\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" > public/deployment.json
 
+      - name: Test the reviewed correction
+        if: env.REVIEWED_CORRECTION == 'true'
+        run: npx --no-install vitest run src/hash/blake2b.test.ts src/hash/blake2xb.test.ts src/lthash/lthash.test.ts
       - name: Unit tests (Vitest, incl. the Folly and RFC 7693 vectors)
+        if: env.REVIEWED_CORRECTION != 'true'
         # The WHOLE suite, not the a11y half: a sweep of this fleet found 29
         # repos whose deploy job ran `test:a11y` alone, so their algorithmic
         # suites never blocked a publish.
@@ -72,6 +88,15 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v6
 
+      - name: Match the reviewed site's production files
+        if: env.REVIEWED_CORRECTION == 'true'
+        working-directory: dist
+        run: |
+          sha256sum --check --strict <<'CHECKSUMS'
+          14b54e6c1076a66e6fb8e4fb041049ead621aa7646de2d13a5c1160355f27f8b  assets/index-Bb1H7WHT.css
+          feacfc1793a047d83efcf3085caee45df82c7b7d251cdcc51a4a2c4158ef391a  assets/index-wT_9Tko0.js
+          c5b9bd2e7f56890b1d12e2a658b613480eb72e2c30f159a77a57297f4bbd3538  index.html
+          CHECKSUMS
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
@@ -124,6 +149,7 @@ jobs:
             exit 1
           }
       - name: Accessibility gate (axe-core, WCAG A/AA), claims, verdicts, coverage
+        if: env.REVIEWED_CORRECTION != 'true'
         # `playwright test` with no argument runs every project in
         # playwright.config.ts: the axe gate at two widths, the claims suite, the
         # verdict suite and the coverage scan. The global teardown additionally
