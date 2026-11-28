@@ -52,7 +52,7 @@ test.describe('displayed claims', () => {
   });
 
   test('order and round-trip panels use the same signed multiset as the maintained digest', async ({ page }) => {
-    await page.getByRole('radio', { name: /multiset/ }).check();
+    await page.getByRole('radio', { name: /signed-count arithmetic/ }).check();
     await page.fill('#update-item', 'duplicate');
     await page.click('#update-add');
     await page.click('#update-add');

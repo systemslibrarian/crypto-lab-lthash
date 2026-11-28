@@ -4,8 +4,7 @@
  *   LtHash(S) = Σ_{x ∈ S} H(x)   in (Z/2^d)^N,
  *
  * where H expands x to N words of d bits. Adding an element adds its vector;
- * removing one subtracts it. The deployed instance (Facebook's Folly library,
- * Solana's accounts lattice hash) is N = 1024, d = 16, with H the first 1,024
+ * removing one subtracts it. The Folly instance reproduced here is N = 1024, d = 16, with H the first 1,024
  * little-endian 16-bit words of a 2,048-byte BLAKE2Xb expansion.
  *
  * Every other (N, d) this lab runs is a REDUCED-SIZE INSTANCE: the first N words
@@ -173,7 +172,7 @@ export function utf8(s: string): Uint8Array {
 
 export class DuplicateItemError extends Error {
   constructor(name: string) {
-    super(`"${name}" is already in the set — in set mode an item can be added once; switch to multiset mode to add it again`);
+    super(`"${name}" is already in the set — in set mode an item can be added once; switch to signed-count arithmetic to add it again`);
     this.name = 'DuplicateItemError';
   }
 }
@@ -192,10 +191,9 @@ export interface Entry {
  * `recomputeFromScratch()` is the independent check that the running digest
  * equals Σ count·H(x) over everything ever touched.
  *
- * Removing an item that was never added is ALLOWED, because the construction
- * cannot refuse it: subtraction is defined for every vector, the digest simply
- * moves, and no error is possible. The entry's count goes negative so the page
- * can say so.
+ * Set mode enforces membership before applying an update. The signed-count
+ * arithmetic mode also allows negative counts, since vector subtraction is
+ * defined for any item.
  */
 export class LtHash {
   readonly params: LtHashParams;
@@ -244,6 +242,9 @@ export class LtHash {
 
   remove(name: string): Uint32Array {
     const existing = this.entries.get(name);
+    if (this.mode === 'set' && existing?.count !== 1) {
+      throw new RangeError(`"${name}" is not in the set. Add it before removing it.`);
+    }
     const item = existing?.item ?? utf8(name);
     const h = this.oracle.hash(item);
     this.running = subWords(this.params, this.running, h);

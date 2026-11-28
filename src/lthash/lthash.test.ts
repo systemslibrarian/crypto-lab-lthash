@@ -164,8 +164,22 @@ describe('Check F — fail-closed paths of the construction', () => {
     expect(multi.list().find((e) => e.name === 'dup')?.count).toBe(2);
   });
 
-  it('removing an item that was never added cannot fail: the digest moves and the count goes negative', () => {
-    const h = new LtHash({ N: 4, d: 4 }, 'set');
+  it('refuses an absent set member before hashing or changing the digest', () => {
+    const set = new LtHash({ N: 4, d: 4 }, 'set');
+    expect(() => set.remove('ghost')).toThrow(/not in the set/);
+    expect(set.queries).toBe(0);
+    set.add('ghost');
+    set.remove('ghost');
+    const empty = set.digest;
+    expect(() => set.remove('ghost')).toThrow(/not in the set/);
+    expect(set.queries).toBe(2);
+    expect(set.digest).toEqual(empty);
+    set.add('ghost');
+    expect(set.members()).toHaveLength(1);
+  });
+
+  it('signed-count arithmetic allows subtraction from zero', () => {
+    const h = new LtHash({ N: 4, d: 4 }, 'multiset');
     const before = h.digest;
     h.remove('ghost');
     expect(wordsEqual(h.digest, before)).toBe(false);

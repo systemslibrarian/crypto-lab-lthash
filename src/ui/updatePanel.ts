@@ -7,7 +7,6 @@
  * recomputed from scratch, so the page never claims the two agree.
  */
 import {
-  DuplicateItemError,
   LtHash,
   type LtHashParams,
   type Mode,
@@ -79,7 +78,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
       state.error = null;
       state.last = { op, name: trimmed, vector, before, changed: changedWords(before, state.hash.digest) };
     } catch (err) {
-      state.error = err instanceof DuplicateItemError ? err.message : String(err);
+      state.error = err instanceof Error ? err.message : String(err);
       state.last = null;
     }
     // Only the output is redrawn. Rebuilding the controls here would reset the
@@ -234,7 +233,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
       output.append(
         note(
           'caveat',
-          `You removed ${negatives.map((e) => `“${e.name}”`).join(', ')} more times than you added them. The construction cannot refuse that: subtraction is defined for every vector, so the digest simply moved and no error is possible. The digest above is still exactly Σ H(x) over the signed counts, which is why the comparison still agrees.`,
+          `You removed ${negatives.map((e) => `“${e.name}”`).join(', ')} more times than you added them. Signed-count arithmetic allows this subtraction. A finite set cannot have negative membership. The digest above is still exactly Σ H(x) over the signed counts, which is why the comparison still agrees.`,
         ),
       );
     }
@@ -311,7 +310,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
                     checked: state.mode === m,
                     onchange: () => rebuild(state.params, m),
                   }),
-                  m === 'set' ? 'set (an item once)' : 'multiset (repeats allowed)',
+                  m === 'set' ? 'set (an item once)' : 'signed-count arithmetic (repeats allowed)',
                 ),
               ),
             ),
@@ -325,7 +324,7 @@ export function renderUpdatePanel(root: HTMLElement): void {
           h(
             'p',
             { class: 'help', id: 'update-item-help' },
-            'The item is hashed as its UTF-8 bytes. In set mode the same item cannot be added twice; in multiset mode it can, and the digest moves again.',
+            'Each item is hashed as UTF-8. Set mode accepts each item once and removes only members. Signed-count arithmetic allows repeats and negative counts. The finite-set security claim applies only to set mode.',
           ),
         ),
       ),

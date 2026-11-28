@@ -231,13 +231,14 @@ export function renderDeployedPanel(root: HTMLElement): void {
       ),
     );
 
+    const updateQueries = hash.queries + roller.queries;
     output.append(
       statList(
         stat('deployed-words', 'WORDS', '1,024', 1024),
         stat('deployed-bits', 'BITS PER WORD', '16', 16),
         stat('deployed-bytes', 'DIGEST BYTES', '2,048', 2048),
         stat('deployed-blocks', 'BLAKE2Xb OUTPUT BLOCKS PER ITEM', '32', 32),
-        stat('deployed-queries', 'HASH QUERIES THIS PANEL MADE', (hash.queries + roller.queries * 2).toLocaleString('en-US'), hash.queries + roller.queries * 2),
+        stat('deployed-queries', 'ITEM HASHES FOR THE FOUR REFERENCE UPDATES AND TWELVE RANDOM UPDATES', updateQueries.toLocaleString('en-US'), updateQueries),
       ),
     );
   };
@@ -275,13 +276,13 @@ export function renderDeployedPanel(root: HTMLElement): void {
     panelIntro(
       'The real one',
       'This is the instance that is actually deployed, running in your browser at full size.',
-      'N = 1024 words of d = 16 bits each: a 2,048-byte digest, with each item expanded by BLAKE2Xb into 1,024 little-endian 16-bit words and added in word by word. It is the parameter set the Folly library ships, the one Facebook deployed for configuration updates, and the one Solana uses for account state.',
+      'N = 1024 words of d = 16 bits each: a 2,048-byte digest, with each item expanded by BLAKE2Xb into 1,024 little-endian 16-bit words and added in word by word. Folly uses BLAKE2Xb for this expansion. Solana uses BLAKE3 for its accounts hash with the same word count, width and addition rule.',
       'The checksum below is not something this page asserts. It is the value printed in Folly’s own test file, and the page reproduces it from the same four operations, then has the browser’s SHA-256 agree about the bytes.',
     ),
     note(
       'info',
       'The reference vector is copied from ',
-      h('a', { href: 'https://github.com/facebook/folly/blob/main/folly/crypto/test/LtHashTest.cpp', target: '_blank', rel: 'noopener noreferrer' }, 'folly/crypto/test/LtHashTest.cpp'),
+      h('a', { href: `https://github.com/facebook/folly/blob/${FOLLY_COMMIT}/folly/crypto/test/LtHashTest.cpp`, target: '_blank', rel: 'noopener noreferrer' }, 'folly/crypto/test/LtHashTest.cpp'),
       ` at commit `,
       h('code', {}, FOLLY_COMMIT.slice(0, 12)),
       '. Folly is Apache-2.0 licensed; the notice travels with the fixture in the source.',
